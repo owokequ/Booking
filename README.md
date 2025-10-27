@@ -1,98 +1,122 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📘 Система бронирования мест
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🚀 Описание проекта
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+REST API для системы бронирования мест на мероприятия.  
+Реализовано на **NestJS + TypeScript**, с использованием **PostgreSQL**, **Prisma ORM**, **Redis** для сессий и **RabbitMQ** для асинхронной обработки событий.  
+Проект демонстрирует принципы чистой архитектуры, транзакционную целостность данных и практику покрытия кода тестами.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🧩 Основной функционал
 
-## Project setup
+**POST `/api/bookings/reserve`** — создание бронирования для пользователя на конкретное событие.  
+Один пользователь не может забронировать одно и то же событие дважды.  
+Если мест больше нет — возвращается ошибка.
 
-```bash
-$ npm install
+Пример запроса:
+```json
+{
+  "event_id": 1,
+  "user_id": "user123"
+}
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+Пример ответа:
+```json
+{
+  "message": "Пользователь user123 забронировал место на событие 1"
+}
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## ⚙️ Технологии
 
-# e2e tests
-$ npm run test:e2e
+| Технология | Назначение |
+|-------------|-------------|
+| **NestJS** | Архитектура приложения и DI |
+| **TypeScript** | Статическая типизация |
+| **Prisma ORM** | Работа с PostgreSQL и транзакциями |
+| **PostgreSQL** | Хранение данных о событиях и бронированиях |
+| **Redis** | Сессии пользователей |
+| **RabbitMQ** | Отправка сообщений о бронированиях |
+| **Docker** | Контейнеризация приложения |
+| **Jest** | Тестирование (unit) |
+| **Swagger (OpenAPI)** | Документация API |
 
-# test coverage
-$ npm run test:cov
+---
+
+## 🧱 Архитектура проекта
+
+Проект реализован по **слоистой архитектуре**:
+
+```
+src/
+ ├── bookings/
+ │    ├── bookings.controller.ts     # Контроллер HTTP-запросов
+ │    ├── bookings.service.ts        # Бизнес-логика
+ │    ├── bookings.repository.ts     # Работа с БД (Prisma)
+ │    └── dtos/booking-reserve.dto.ts# DTO и валидация входных данных
+ │
+ ├── prisma/
+ │    ├── schema.prisma              # Описание моделей
+ │    └── prisma.service.ts          # Интеграция Prisma с NestJS
+ │
+ ├── common/
+ │    └── exception/                 # Глобальные фильтры ошибок
+ │
+ ├── main.ts                         # Точка входа (инициализация Redis, RabbitMQ, Swagger)
+ └── app.module.ts                   # Корневой модуль NestJS
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🧪 Тестирование
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- Покрыты **unit-тестами** все основные сценарии бронирования.
+- Тестируется бизнес-логика и обработка ошибок через Prisma-транзакции.
+- E2E-тесты могут быть добавлены при необходимости для проверки HTTP-флоу.
 
+Пример запуска тестов:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🐳 Запуск через Docker
 
-Check out a few resources that may come in handy when working with NestJS:
+1. Создать `.env` на основе `.env.example`  
+2. Собрать и запустить контейнеры:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+docker-compose up --build
+```
 
-## Support
+3. Приложение будет доступно на `http://localhost:3000`  
+4. Swagger-документация доступна по адресу:  
+   👉 `http://localhost:3000/docs`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 📡 Интеграция с RabbitMQ
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+После успешного бронирования событие публикуется в очередь RabbitMQ (`booking_queue`),  
+что позволяет другим сервисам реагировать на изменения (например, отправка email-уведомлений).
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🚀 CI/CD
+
+Для проекта настроен **GitHub Actions** workflow, который автоматически проверяет код при каждом push:
+
+- **Lint** — запускается ESLint, чтобы убедиться, что весь код соответствует стилю и правилам TypeScript.
+- **Test** — запускаются unit-тесты через Jest.
+- Workflow настроен так, что тесты выполняются только после успешного прохождения линта.
+
+## 👨‍💻 Автор
+
+**[Артем Вершинин]**  
+Backend Developer | Node.js | NestJS | TypeScript  
+📧 Email: owokequ@gmail.com  
