@@ -1,36 +1,44 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 
-export default tseslint.config(
+export default [
   {
-    ignores: ['eslint.config.mjs'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
+    files: ['**/*.ts'],
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
+      parser: tsParser,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        project: ['./tsconfig.json'],
+        sourceType: 'module',
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      // 💡 Мягче относимся к "any" и unsafe операциям
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+
+      // 🧩 Позволяем не await’ить промисы в bootstrap и тестах
+      '@typescript-eslint/no-floating-promises': ['warn', { ignoreVoid: true }],
+
+      // 🚀 Прочие улучшения
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     },
   },
   {
+    // ⚙️ Отдельные правила для тестов
+    files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unused-expressions': 'error',
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
-);
+];

@@ -20,7 +20,7 @@ export class BookingsRepository {
       const events = await tx.events.findUnique({
         where: { id: eventId },
       });
-      if ((events?.totalSeats as number) <= count) {
+      if (events?.totalSeats <= count) {
         throw new GoneException('Места на мероприятие закончились!');
       }
       return await tx.booking.create({
