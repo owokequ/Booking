@@ -5,6 +5,7 @@ import {
   Inject,
   Next,
   Post,
+  Query,
   Req,
   Res,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { BookingReserveDto } from './dtos/booking-reserve.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { BOOKING_SERVICE_RABBITMQ } from '../constants';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BookingFilterDto } from './dtos/filter-booking.dto';
 
 @ApiTags('bookings')
 @Controller('bookings')
@@ -82,6 +84,19 @@ export class BookingsController {
       return res.status(200).json({
         message: `Пользователь ${user_id} забронировал место на событие ${event_id}`,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+  @Post('filter')
+  async filter(
+    @Query('date') query,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    try {
+      const result = await this.bookingsService.filterBookings(query);
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }

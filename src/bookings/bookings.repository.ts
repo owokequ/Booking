@@ -31,4 +31,16 @@ export class BookingsRepository {
       });
     });
   }
+
+  async filterDay(dateStart: Date, dateEnd: Date) {
+    return await this.prisma.user.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(dateStart),
+          lt: new Date(dateEnd),
+        },
+      },
+      take: 10,
+    });
+  }
 }
